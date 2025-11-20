@@ -232,7 +232,7 @@ const nextConfig = {
     remotePatterns: remoteImagePatterns,
   },
 
-  // Webpack configuration for handling Node.js built-in modules
+  // Webpack configuration for handling Node.js built-in modules and critical dependency warnings
   webpack: (config: any, { isServer }: { isServer: boolean }) => {
     if (!isServer) {
       // Don't resolve Node.js modules on client side
@@ -254,6 +254,29 @@ const nextConfig = {
         "graceful-fs": false,
       };
     }
+
+    // Suppress critical dependency warnings from OpenTelemetry and Sentry
+    config.ignoreWarnings = [
+      // Ignore OpenTelemetry instrumentation warnings
+      {
+        module: /@opentelemetry\/instrumentation/,
+        message: /Critical dependency: the request of a dependency is an expression/,
+      },
+      {
+        module: /require-in-the-middle/,
+        message: /Critical dependency: require function is used in a way in which dependencies cannot be statically extracted/,
+      },
+      // Ignore Sentry related warnings
+      {
+        module: /@sentry/,
+        message: /Critical dependency/,
+      },
+      // Generic critical dependency warnings for known safe modules
+      {
+        message: /Critical dependency: the request of a dependency is an expression/,
+      },
+    ];
+
     return config;
   },
 };
