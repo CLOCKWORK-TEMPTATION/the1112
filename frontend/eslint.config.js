@@ -49,14 +49,25 @@ module.exports = [
 
   // Extend Next.js and Prettier configs (fixed deprecated options)
   ...compat.extends("next/core-web-vitals", "prettier").map(config => {
-    // Remove deprecated options if they exist
-    if (config.settings?.['import/extensions']) {
-      delete config.settings['import/extensions'];
+    // Remove all deprecated ESLint options
+    const cleanConfig = { ...config };
+    
+    // Remove deprecated options
+    delete cleanConfig.useEslintrc;
+    delete cleanConfig.extensions;
+    
+    // Clean settings object
+    if (cleanConfig.settings) {
+      delete cleanConfig.settings['import/extensions'];
+      delete cleanConfig.settings.extensions;
     }
-    if (config.useEslintrc !== undefined) {
-      delete config.useEslintrc;
+    
+    // Clean parserOptions
+    if (cleanConfig.parserOptions) {
+      delete cleanConfig.parserOptions.extensions;
     }
-    return config;
+    
+    return cleanConfig;
   }),
 
   // Custom rules to override extends
